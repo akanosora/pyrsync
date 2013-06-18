@@ -117,19 +117,14 @@ def rsyncdelta(datastream, remotesignatures, blocksize=4096):
 
 def blockchecksums(instream, blocksize=4096):
     """
-    Returns a list of weak and strong hashes for each block of the
-    defined size for the given data stream.
+    Return a generator of (weak hash (int), strong hash(bytes)) tuples
+    for each block of the defined size for the given data stream.
     """
-    weakhashes = list()
-    stronghashes = list()
     read = instream.read(blocksize)
 
     while read:
-        weakhashes.append(weakchecksum(read)[0])
-        stronghashes.append(hashlib.sha256(read).hexdigest())
+        yield (weakchecksum(read)[0], hashlib.sha256(read).digest())
         read = instream.read(blocksize)
-
-    return weakhashes, stronghashes
 
 
 def patchstream(instream, outstream, delta):
