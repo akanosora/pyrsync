@@ -4,7 +4,7 @@
 This is a pure Python implementation of the [rsync algorithm] [TM96].
 
 Updated to use SHA256 hashing (instead of the standard implementation
-which uses outdated MD5 hashes), and packages for disutils 
+which uses outdated MD5 hashes), and packages for disutils
 distribution by Isis Lovecruft, <isis@patternsinthevoid.net>. The
 majority of the code is blatantly stolen from Eric Pruitt's code
 as posted on [ActiveState] [1].
@@ -43,7 +43,7 @@ if not(hasattr(__builtins__, "bytes")) or str is bytes:
             return map(ord, var)
 
 __all__ = ["rollingchecksum", "weakchecksum", "patchstream", "rsyncdelta",
-    "blockchecksums"]
+           "blockchecksums"]
 
 
 def rsyncdelta(datastream, remotesignatures, blocksize=4096):
@@ -178,6 +178,6 @@ def weakchecksum(data):
     l = len(data)
     for i in range(l):
         a += data[i]
-        b += (l - i)*data[i]
+        b += (l - i) * data[i]
 
     return (b << 16) | a, a, b
