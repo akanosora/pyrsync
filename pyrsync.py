@@ -47,14 +47,15 @@ def rsyncdelta(datastream, remotesignatures, blocksize=4096):
 
     match = True
     matchblock = -1
-    deltaqueue = collections.deque()
+    current_block = bytearray()
 
     while True:
         if match and datastream is not None:
             # Whenever there is a match or the loop is running for the first
             # time, populate the window using weakchecksum instead of rolling
             # through every single byte which takes at least twice as long.
-            window = collections.deque(datastream.read(blocksize))
+            window = bytearray(datastream.read(blocksize))
+            window_offset = 0
             checksum, a, b = weakchecksum(window)
 
         try:
@@ -63,11 +64,18 @@ def rsyncdelta(datastream, remotesignatures, blocksize=4096):
             # be missed and the data sent over. May fix eventually, but this
             # problem arises very rarely.
             matchblock = remote_weak.index(checksum, matchblock + 1)
-            stronghash = hashlib.sha256(window).hexdigest()
+            stronghash = hashlib.sha256(
+                window[window_offset:]
+            ).hexdigest()
             matchblock = remote_strong.index(stronghash, matchblock)
 
             match = True
-            deltaqueue.append(matchblock)
+
+            if len(current_block) > 0:
+                yield bytes(current_block)
+
+            yield matchblock
+            current_block = bytearray()
 
             if datastream.closed:
                 break
@@ -89,35 +97,34 @@ def rsyncdelta(datastream, remotesignatures, blocksize=4096):
                 tailsize = datastream.tell() % blocksize
                 datastream = None
 
-            if datastream is None and len(window) <= tailsize:
+            if datastream is None and len(window) - window_offset <= tailsize:
                 # The likelihood that any blocks will match after this is
                 # nearly nil so call it quits.
-                deltaqueue.append(window)
+
+                # Flush the current block
+                if len(current_block) > 0:
+                    yield bytes(current_block)
+
+                current_block = window[window_offset:]
+
                 break
 
             # Yank off the extra byte and calculate the new window checksum
-            oldbyte = window.popleft()
+            oldbyte = window[window_offset]
+            window_offset += 1
             checksum, a, b = rollingchecksum(oldbyte, newbyte, a, b, blocksize)
 
             # Add the old byte the file delta. This is data that was not found
             # inside of a matching block so it needs to be sent to the target.
-            try:
-                deltaqueue[-1].append(oldbyte)
-            except (AttributeError, IndexError):
-                deltaqueue.append([oldbyte])
+            current_block.append(oldbyte)
 
-    # Return a delta that starts with the blocksize and converts all iterables
-    # to bytes.
-    deltastructure = [blocksize]
-    for element in deltaqueue:
-        deltastructure.append(element)
-
-    return deltastructure
+    if len(current_block) > 0:
+        yield bytes(current_block)
 
 
 def blockchecksums(instream, blocksize=4096):
     """
-    Return a generator of (weak hash (int), strong hash(bytes)) tuples
+    Generator of (weak hash (int), strong hash(bytes)) tuples
     for each block of the defined size for the given data stream.
     """
     read = instream.read(blocksize)
