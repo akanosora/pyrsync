@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 This is a pure Python implementation of the [rsync algorithm] [TM96].
 
@@ -34,14 +32,6 @@ http://samba.anu.edu.au/rsync/.
 import collections
 import hashlib
 
-if not(hasattr(__builtins__, "bytes")) or str is bytes:
-    # Python 2.x compatibility
-    def bytes(var, *args):
-        try:
-            return ''.join(map(chr, var))
-        except TypeError:
-            return map(ord, var)
-
 __all__ = ["rollingchecksum", "weakchecksum", "patchstream", "rsyncdelta",
            "blockchecksums"]
 
@@ -64,7 +54,7 @@ def rsyncdelta(datastream, remotesignatures, blocksize=4096):
             # Whenever there is a match or the loop is running for the first
             # time, populate the window using weakchecksum instead of rolling
             # through every single byte which takes at least twice as long.
-            window = collections.deque(bytes(datastream.read(blocksize)))
+            window = collections.deque(datastream.read(blocksize))
             checksum, a, b = weakchecksum(window)
 
         try:
@@ -73,7 +63,7 @@ def rsyncdelta(datastream, remotesignatures, blocksize=4096):
             # be missed and the data sent over. May fix eventually, but this
             # problem arises very rarely.
             matchblock = remote_weak.index(checksum, matchblock + 1)
-            stronghash = hashlib.sha256(bytes(window)).hexdigest()
+            stronghash = hashlib.sha256(window).hexdigest()
             matchblock = remote_strong.index(stronghash, matchblock)
 
             match = True
@@ -120,10 +110,7 @@ def rsyncdelta(datastream, remotesignatures, blocksize=4096):
     # to bytes.
     deltastructure = [blocksize]
     for element in deltaqueue:
-        if isinstance(element, int):
-            deltastructure.append(element)
-        elif element:
-            deltastructure.append(bytes(element))
+        deltastructure.append(element)
 
     return deltastructure
 
@@ -138,7 +125,7 @@ def blockchecksums(instream, blocksize=4096):
     read = instream.read(blocksize)
 
     while read:
-        weakhashes.append(weakchecksum(bytes(read))[0])
+        weakhashes.append(weakchecksum(read)[0])
         stronghashes.append(hashlib.sha256(read).hexdigest())
         read = instream.read(blocksize)
 
