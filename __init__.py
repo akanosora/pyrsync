@@ -3,16 +3,15 @@
 
 import sys
 
-if sys.version_info < (2, 2):
-    raise RuntimeError('You need python 2.2 for this module.')
+if sys.version_info < (3, 0):
+    raise RuntimeError('You need python 3 for this module.')
 
-__author__ = "Isis Lovecruft <isis@patternsinthevoid.net>"
-__date__ = "24 Jan 2012"
-__version__ = (0, 1, 0)
+__author__ = "Isis Lovecruft, Georgy Angelov"
+__date__ = "19 Jun 2013"
+__version__ = (0, 2, 0)
 __license__ = "MIT"
 
 import collections
 import hashlib
 
-__all__ = [ 'collections',
-            'hashlib', ]
+__all__ = ['hashlib']

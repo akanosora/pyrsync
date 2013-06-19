@@ -29,7 +29,6 @@ http://samba.anu.edu.au/rsync/.
     >>> patchstream(unpatched, save_to, delta)
 """
 
-import collections
 import hashlib
 
 __all__ = ["rollingchecksum", "weakchecksum", "patchstream", "rsyncdelta",
