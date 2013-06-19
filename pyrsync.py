@@ -63,7 +63,7 @@ def rsyncdelta(datastream, remotesignatures, blocksize=4096):
 
         if (checksum in remotesignatures and
                 remotesignatures[checksum][1] ==
-                hashlib.sha256(window[window_offset:]).digest()):
+                hashlib.md5(window[window_offset:]).digest()):
 
             matchblock = remotesignatures[checksum][0]
 
@@ -128,7 +128,7 @@ def blockchecksums(instream, blocksize=4096):
     read = instream.read(blocksize)
 
     while read:
-        yield (weakchecksum(read)[0], hashlib.sha256(read).digest())
+        yield (weakchecksum(read)[0], hashlib.md5(read).digest())
         read = instream.read(blocksize)
 
 
