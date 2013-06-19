@@ -25,7 +25,7 @@ class PyRsyncTests(unittest.TestCase):
             block * self.TEST_BLOCK_SIZE:(block + 1) * self.TEST_BLOCK_SIZE
         ]
 
-    def delta_test(self, file, expected_delta):
+    def get_delta(self, file):
         file_to = BytesIO(self.TEST_FILE)
         file_from = BytesIO(file)
 
@@ -39,9 +39,7 @@ class PyRsyncTests(unittest.TestCase):
             hashes,
             blocksize=self.TEST_BLOCK_SIZE
         )
-        delta = list(delta)
-
-        self.assertEqual(delta, expected_delta)
+        return list(delta)
 
     def test_blockchecksums(self):
         with BytesIO(self.TEST_FILE) as file1:
@@ -115,13 +113,58 @@ class PyRsyncTests(unittest.TestCase):
                         self.assertEqual(block, data)
 
     def test_rsyncdelta_with_additions(self):
-        self.delta_test(self.TEST_FILE_ADDITIONS, self.ADDITIONS_DELTA)
+        delta = self.get_delta(self.TEST_FILE_ADDITIONS)
+        self.assertEqual(delta, self.ADDITIONS_DELTA)
 
     def test_rsyncdelta_with_deletes(self):
-        self.delta_test(self.TEST_FILE_DELETES, self.DELETES_DELTA)
+        delta = self.get_delta(self.TEST_FILE_DELETES)
+        self.assertEqual(delta, self.DELETES_DELTA)
 
     def test_rsyncdelta_with_reorders(self):
-        self.delta_test(self.TEST_FILE_REORDERS, self.REORDERS_DELTA)
+        delta = self.get_delta(self.TEST_FILE_REORDERS)
+        self.assertEqual(delta, self.REORDERS_DELTA)
+
+    def test_patchstream_with_additions(self):
+        delta = self.get_delta(self.TEST_FILE_ADDITIONS)
+
+        old_file = BytesIO(self.TEST_FILE)
+        out_file = BytesIO()
+        pyrsync.patchstream(
+            old_file,
+            out_file,
+            delta,
+            blocksize=self.TEST_BLOCK_SIZE
+        )
+
+        self.assertEqual(out_file.getvalue(), self.TEST_FILE_ADDITIONS)
+
+    def test_patchstream_with_deletes(self):
+        delta = self.get_delta(self.TEST_FILE_DELETES)
+
+        old_file = BytesIO(self.TEST_FILE)
+        out_file = BytesIO()
+        pyrsync.patchstream(
+            old_file,
+            out_file,
+            delta,
+            blocksize=self.TEST_BLOCK_SIZE
+        )
+
+        self.assertEqual(out_file.getvalue(), self.TEST_FILE_DELETES)
+
+    def test_patchstream_with_reorders(self):
+        delta = self.get_delta(self.TEST_FILE_REORDERS)
+
+        old_file = BytesIO(self.TEST_FILE)
+        out_file = BytesIO()
+        pyrsync.patchstream(
+            old_file,
+            out_file,
+            delta,
+            blocksize=self.TEST_BLOCK_SIZE
+        )
+
+        self.assertEqual(out_file.getvalue(), self.TEST_FILE_REORDERS)
 
 if __name__ == '__main__':
     unittest.main()
