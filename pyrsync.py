@@ -43,8 +43,11 @@ def rsyncdelta(datastream, remotesignatures, blocksize=4096):
     up-to-date data. The blocksize must be the same as the value
     used to generate remotesignatures.
     """
-    remote_weak, remote_strong = remotesignatures
 
+    remotesignatures = {
+        weak: (index, strong) for index, (weak, strong)
+        in enumerate(remotesignatures)
+    }
     match = True
     matchblock = -1
     current_block = bytearray()
@@ -58,16 +61,11 @@ def rsyncdelta(datastream, remotesignatures, blocksize=4096):
             window_offset = 0
             checksum, a, b = weakchecksum(window)
 
-        try:
-            # If there are two identical weak checksums in a file, and the
-            # matching strong hash does not occur at the first match, it will
-            # be missed and the data sent over. May fix eventually, but this
-            # problem arises very rarely.
-            matchblock = remote_weak.index(checksum, matchblock + 1)
-            stronghash = hashlib.sha256(
-                window[window_offset:]
-            ).hexdigest()
-            matchblock = remote_strong.index(stronghash, matchblock)
+        if (checksum in remotesignatures and
+                remotesignatures[checksum][1] ==
+                hashlib.sha256(window[window_offset:]).digest()):
+
+            matchblock = remotesignatures[checksum][0]
 
             match = True
 
@@ -81,8 +79,8 @@ def rsyncdelta(datastream, remotesignatures, blocksize=4096):
                 break
             continue
 
-        except ValueError:
-            # The weakchecksum did not match
+        else:
+            # The weakchecksum (or the strong one) did not match
             match = False
             try:
                 if datastream:
