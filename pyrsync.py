@@ -131,14 +131,13 @@ def blockchecksums(instream, blocksize=4096):
         read = instream.read(blocksize)
 
 
-def patchstream(instream, outstream, delta):
+def patchstream(instream, outstream, delta, blocksize=4096):
     """
     Patches instream using the supplied delta and write the resultantant
     data to outstream.
     """
-    blocksize = delta[0]
 
-    for element in delta[1:]:
+    for element in delta:
         if isinstance(element, int) and blocksize:
             instream.seek(element * blocksize)
             element = instream.read(blocksize)
