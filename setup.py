@@ -18,18 +18,19 @@ if version < '2.2.3':
     DistributionMetadata.classifiers = None
     DistributionMetadata.download_url = None
 
-# Utility function to read the README.md file from main directory, used for 
+# Utility function to read the README.md file from main directory, used for
 # the long_description.
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='pyrsync',
-      version='0.1.0',
-      description='''A Python module which implements rsync with SHA256 hash.''',
+      version='0.2.0',
+      description='''A Python 3 module which implements rsync binary diff
+      algorithm.''',
       long_description=read('README.md'),
-      author='Eric Pruitt, Isis Lovecruft',
+      author='Eric Pruitt, Isis Lovecruft, Georgy Angelov',
       author_email='isis@patternsinthevoid.net',
-      url='https://github.com/isislovecruft/pyrsync',
+      url='https://github.com/stormbreakerbg/pyrsync',
       py_modules=['pyrsync'],
       license=['MIT'],
       classifiers=[

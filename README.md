@@ -1,18 +1,9 @@
 ===============================
 #pyrsync
 ===============================
-pyrsync is a Python module which implements the [rsync algorithm] [1], 
-written in pure Python. It *is not* a wrapper for rsync, but a set of 
+pyrsync is a Python module which implements the [rsync algorithm] [1],
+written in pure Python. It *is not* a wrapper for rsync, but a set of
 functions which apply full rsync functionality through Python.
-
-The original rsync specification calls for the use of an MD5 hash, which
-the developers of this module considers to be outdated, and thus all 
-occurences of MD5 have been replaced with SHA256. Personally, I would
-opt for using SHA512, but this would double the storage size for hash
-table databases. SHA256 is sufficient to meet standard security 
-requirements for verification processes as of this release, although,
-eventually, added functionality for the user/developer to choose between
-various hashes should be considered for further releases.
 
 The majority of the code for this module is taken from [Eric Pruitt's
 post at ActiveState] [2]. It was orginally licensed under an [MIT license]
@@ -24,7 +15,7 @@ If you have [setuptools] [4] installed, simply do:
 
     $ sudo python setup.py install
 
-If you do not have setuptools, the setup.py script will detect this and 
+If you do not have setuptools, the setup.py script will detect this and
 default to using the python builtin distutils. To install using distutils,
 the installation process is the same as documented above for setuptools.
 
