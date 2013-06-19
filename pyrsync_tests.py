@@ -9,22 +9,49 @@ import pyrsync
 
 class PyRsyncTests(unittest.TestCase):
     TEST_BLOCK_SIZE = 4
-    TEST_FILE_1 = b'one really small file here'
+    TEST_FILE = b'one really small file here'
+
+    TEST_FILE_ADDITIONS = b'one really smaller file here :)'
+    ADDITIONS_DELTA = [0, 1, 2, 3, b'er', 4, 5, b're', b' :)']
+
+    TEST_FILE_DELETES = b'one really s file here'
+    DELETES_DELTA = [0, 1, 2, 4, 5, 6]
+
+    TEST_FILE_REORDERS = b'realone mallly s file here'
+    REORDERS_DELTA = [1, 0, 3, 2, 4, 5, 6]
 
     def get_block(self, data, block):
         return data[
             block * self.TEST_BLOCK_SIZE:(block + 1) * self.TEST_BLOCK_SIZE
         ]
 
+    def delta_test(self, file, expected_delta):
+        file_to = BytesIO(self.TEST_FILE)
+        file_from = BytesIO(file)
+
+        hashes = pyrsync.blockchecksums(
+            file_to,
+            blocksize=self.TEST_BLOCK_SIZE
+        )
+
+        delta = pyrsync.rsyncdelta(
+            file_from,
+            hashes,
+            blocksize=self.TEST_BLOCK_SIZE
+        )
+        delta = list(delta)
+
+        self.assertEqual(delta, expected_delta)
+
     def test_blockchecksums(self):
-        with BytesIO(self.TEST_FILE_1) as file1:
+        with BytesIO(self.TEST_FILE) as file1:
             hashes = pyrsync.blockchecksums(
                 file1,
                 blocksize=self.TEST_BLOCK_SIZE
             )
 
             for block, block_hash in enumerate(hashes):
-                block_data = self.get_block(self.TEST_FILE_1, block)
+                block_data = self.get_block(self.TEST_FILE, block)
 
                 weaksum = pyrsync.weakchecksum(block_data)[0]
                 strongsum = hashlib.md5(block_data).digest()
@@ -32,13 +59,13 @@ class PyRsyncTests(unittest.TestCase):
                 self.assertEqual(block_hash, (weaksum, strongsum))
 
     def test_rsyncdelta_same_file(self):
-        with BytesIO(self.TEST_FILE_1) as file_to:
+        with BytesIO(self.TEST_FILE) as file_to:
             hashes = pyrsync.blockchecksums(
                 file_to,
                 blocksize=self.TEST_BLOCK_SIZE
             )
 
-            with BytesIO(self.TEST_FILE_1) as file_from:
+            with BytesIO(self.TEST_FILE) as file_from:
                 delta = pyrsync.rsyncdelta(
                     file_from, hashes,
                     blocksize=self.TEST_BLOCK_SIZE
@@ -53,11 +80,11 @@ class PyRsyncTests(unittest.TestCase):
             (3, 2),
             (4, 0),
             (5, self.TEST_BLOCK_SIZE - 1),
-            (math.ceil(len(self.TEST_FILE_1) / self.TEST_BLOCK_SIZE) - 1, 0)
+            (math.ceil(len(self.TEST_FILE) / self.TEST_BLOCK_SIZE) - 1, 0)
         ]
         changed_blocks = [block for block, position in changes_in_blocks]
 
-        with BytesIO(self.TEST_FILE_1) as changed_file:
+        with BytesIO(self.TEST_FILE) as changed_file:
             file_buffer = changed_file.getbuffer()
 
             for block, position in changes_in_blocks:
@@ -65,18 +92,19 @@ class PyRsyncTests(unittest.TestCase):
 
             changed_file_data = changed_file.getvalue()
 
-            with BytesIO(self.TEST_FILE_1) as file_to:
+            with BytesIO(self.TEST_FILE) as file_to:
                 hashes = pyrsync.blockchecksums(
                     file_to,
                     blocksize=self.TEST_BLOCK_SIZE
                 )
 
                 delta = pyrsync.rsyncdelta(
-                    changed_file, hashes,
+                    changed_file,
+                    hashes,
                     blocksize=self.TEST_BLOCK_SIZE,
                     max_buffer=self.TEST_BLOCK_SIZE
                 )
-                delta=list(delta)
+
                 for block, data in enumerate(delta):
                     if block in changed_blocks:
                         self.assertEqual(
@@ -85,6 +113,15 @@ class PyRsyncTests(unittest.TestCase):
                         )
                     else:
                         self.assertEqual(block, data)
+
+    def test_rsyncdelta_with_additions(self):
+        self.delta_test(self.TEST_FILE_ADDITIONS, self.ADDITIONS_DELTA)
+
+    def test_rsyncdelta_with_deletes(self):
+        self.delta_test(self.TEST_FILE_DELETES, self.DELETES_DELTA)
+
+    def test_rsyncdelta_with_reorders(self):
+        self.delta_test(self.TEST_FILE_REORDERS, self.REORDERS_DELTA)
 
 if __name__ == '__main__':
     unittest.main()
