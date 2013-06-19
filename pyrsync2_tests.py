@@ -4,7 +4,7 @@ import math
 
 from io import BytesIO
 
-import pyrsync
+import pyrsync2
 
 
 class PyRsyncTests(unittest.TestCase):
@@ -29,12 +29,12 @@ class PyRsyncTests(unittest.TestCase):
         file_to = BytesIO(self.TEST_FILE)
         file_from = BytesIO(file)
 
-        hashes = pyrsync.blockchecksums(
+        hashes = pyrsync2.blockchecksums(
             file_to,
             blocksize=self.TEST_BLOCK_SIZE
         )
 
-        delta = pyrsync.rsyncdelta(
+        delta = pyrsync2.rsyncdelta(
             file_from,
             hashes,
             blocksize=self.TEST_BLOCK_SIZE
@@ -43,7 +43,7 @@ class PyRsyncTests(unittest.TestCase):
 
     def test_blockchecksums(self):
         with BytesIO(self.TEST_FILE) as file1:
-            hashes = pyrsync.blockchecksums(
+            hashes = pyrsync2.blockchecksums(
                 file1,
                 blocksize=self.TEST_BLOCK_SIZE
             )
@@ -51,20 +51,20 @@ class PyRsyncTests(unittest.TestCase):
             for block, block_hash in enumerate(hashes):
                 block_data = self.get_block(self.TEST_FILE, block)
 
-                weaksum = pyrsync.weakchecksum(block_data)[0]
+                weaksum = pyrsync2.weakchecksum(block_data)[0]
                 strongsum = hashlib.md5(block_data).digest()
 
                 self.assertEqual(block_hash, (weaksum, strongsum))
 
     def test_rsyncdelta_same_file(self):
         with BytesIO(self.TEST_FILE) as file_to:
-            hashes = pyrsync.blockchecksums(
+            hashes = pyrsync2.blockchecksums(
                 file_to,
                 blocksize=self.TEST_BLOCK_SIZE
             )
 
             with BytesIO(self.TEST_FILE) as file_from:
-                delta = pyrsync.rsyncdelta(
+                delta = pyrsync2.rsyncdelta(
                     file_from, hashes,
                     blocksize=self.TEST_BLOCK_SIZE
                 )
@@ -91,12 +91,12 @@ class PyRsyncTests(unittest.TestCase):
             changed_file_data = changed_file.getvalue()
 
             with BytesIO(self.TEST_FILE) as file_to:
-                hashes = pyrsync.blockchecksums(
+                hashes = pyrsync2.blockchecksums(
                     file_to,
                     blocksize=self.TEST_BLOCK_SIZE
                 )
 
-                delta = pyrsync.rsyncdelta(
+                delta = pyrsync2.rsyncdelta(
                     changed_file,
                     hashes,
                     blocksize=self.TEST_BLOCK_SIZE,
@@ -129,7 +129,7 @@ class PyRsyncTests(unittest.TestCase):
 
         old_file = BytesIO(self.TEST_FILE)
         out_file = BytesIO()
-        pyrsync.patchstream(
+        pyrsync2.patchstream(
             old_file,
             out_file,
             delta,
@@ -143,7 +143,7 @@ class PyRsyncTests(unittest.TestCase):
 
         old_file = BytesIO(self.TEST_FILE)
         out_file = BytesIO()
-        pyrsync.patchstream(
+        pyrsync2.patchstream(
             old_file,
             out_file,
             delta,
@@ -157,7 +157,7 @@ class PyRsyncTests(unittest.TestCase):
 
         old_file = BytesIO(self.TEST_FILE)
         out_file = BytesIO()
-        pyrsync.patchstream(
+        pyrsync2.patchstream(
             old_file,
             out_file,
             delta,

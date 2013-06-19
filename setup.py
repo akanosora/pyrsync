@@ -1,39 +1,26 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-
 import os
 from sys import version
 
-SETUPTOOLS = False
+from distutils.core import setup
 
-try:
-    from setuptools import setup
-    SETUPTOOLS = False
-except ImportError:
-    from distutils.core import setup
-
-# Backwards compatibility with distutils prior to 2.2.3:
-if version < '2.2.3':
-    from distutils.dist import DistributionMetadata
-    DistributionMetadata.classifiers = None
-    DistributionMetadata.download_url = None
 
 # Utility function to read the README.md file from main directory, used for
 # the long_description.
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-setup(name='pyrsync',
-      version='0.2.0',
-      description='''A Python 3 module which implements rsync binary diff
-      algorithm.''',
-      long_description=read('README.md'),
-      author='Eric Pruitt, Isis Lovecruft, Georgy Angelov',
-      author_email='isis@patternsinthevoid.net',
-      url='https://github.com/stormbreakerbg/pyrsync',
-      py_modules=['pyrsync'],
-      license=['MIT'],
-      classifiers=[
+setup(
+    name='pyrsync2',
+    version='0.2.1',
+    description='''A Python 3 module which implements rsync binary diff
+    algorithm.''',
+    long_description=read('README'),
+    author='Georgy Angelov, Eric Pruitt, Isis Lovecruft',
+    author_email='georgyangelov@gmail.com',
+    url='https://github.com/stormbreakerbg/pyrsync',
+    py_modules=['pyrsync2'],
+    license=['MIT'],
+    classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Environment :: MacOS X',
@@ -47,7 +34,7 @@ setup(name='pyrsync',
         'Topic :: System :: Archiving',
         'Topic :: System :: Archiving :: Backup',
         'Topic :: System :: Archiving :: Compression', ],
-      packages=['pyrsync'],
-      package_dir={'pyrsync': ''},
-      package_data={'': ['README\.md']},
-      )
+    packages=['pyrsync2'],
+    package_dir={'pyrsync2': ''},
+    package_data={'': ['README\.md']},
+)
