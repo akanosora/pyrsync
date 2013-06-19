@@ -35,7 +35,7 @@ __all__ = ["rollingchecksum", "weakchecksum", "patchstream", "rsyncdelta",
            "blockchecksums"]
 
 
-def rsyncdelta(datastream, remotesignatures, blocksize=4096):
+def rsyncdelta(datastream, remotesignatures, blocksize=4096, max_buffer=4096):
     """
     Generates a binary patch when supplied with the weak and strong
     hashes from an unpatched target and a readable stream for the
@@ -110,6 +110,10 @@ def rsyncdelta(datastream, remotesignatures, blocksize=4096):
             oldbyte = window[window_offset]
             window_offset += 1
             checksum, a, b = rollingchecksum(oldbyte, newbyte, a, b, blocksize)
+
+            if len(current_block) >= max_buffer:
+                yield bytes(current_block)
+                current_block = bytearray()
 
             # Add the old byte the file delta. This is data that was not found
             # inside of a matching block so it needs to be sent to the target.
