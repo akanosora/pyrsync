@@ -11,7 +11,7 @@ def read(fname):
 
 setup(
     name='pyrsync2',
-    version='0.2.1',
+    version='0.2.2',
     description='''A Python 3 module which implements rsync binary diff
     algorithm.''',
     long_description=read('README'),
