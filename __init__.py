@@ -5,9 +5,9 @@ if sys.version_info < (3, 0):
 
 __author__ = "Georgy Angelov, Isis Lovecruft"
 __date__ = "19 Jun 2013"
-__version__ = (0, 2, 0)
+__version__ = (0, 2, 6)
 __license__ = "MIT"
 
 import hashlib
 
-__all__ = ['hashlib']
+from .pyrsync2 import *

@@ -1,18 +1,6 @@
 """
 This is a pure Python implementation of the [rsync algorithm] [TM96].
 
-Updated to use SHA256 hashing (instead of the standard implementation
-which uses outdated MD5 hashes), and packages for disutils
-distribution by Isis Lovecruft, <isis@patternsinthevoid.net>. The
-majority of the code is blatantly stolen from Eric Pruitt's code
-as posted on [ActiveState] [1].
-
-[1]: https://code.activestate.com/recipes/577518-rsync-algorithm/
-
-[TM96]: Andrew Tridgell and Paul Mackerras. The rsync algorithm.
-Technical Report TR-CS-96-05, Canberra 0200 ACT, Australia, 1996.
-http://samba.anu.edu.au/rsync/.
-
 ### Example Use Case: ###
 
     # On the system containing the file that needs to be patched
@@ -31,8 +19,14 @@ http://samba.anu.edu.au/rsync/.
 
 import hashlib
 
-__all__ = ["rollingchecksum", "weakchecksum", "patchstream", "rsyncdelta",
-           "blockchecksums"]
+__all__ = [
+    "rollingchecksum",
+    "weakchecksum",
+    "patchstream",
+    "patchstream_block",
+    "rsyncdelta",
+    "blockchecksums"
+]
 
 
 def rsyncdelta(datastream, remotesignatures, blocksize=4096, max_buffer=4096):
