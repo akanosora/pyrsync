@@ -78,8 +78,9 @@ def rsyncdelta(datastream, hashes, blocksize=4096, max_buffer=4096):
             # Yank off the extra byte and calculate the new window checksum
             checksum, a, b = rollingchecksum(oldbyte, newbyte, a, b, blocksize)
 
-        strongkey = hashlib.md5(window[window_offset:]).digest()
-        if (checksum in hashdict and strongkey in hashdict[checksum]):
+        strongkey = hashlib.md5(window[window_offset:]).digest() if (
+                checksum in hashdict) else None
+        if checksum in hashdict and strongkey in hashdict[checksum]:
             match = True
 
             if current_block:
